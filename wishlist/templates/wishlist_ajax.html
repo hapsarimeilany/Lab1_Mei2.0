@@ -9,6 +9,7 @@
 {% endblock meta %}
 
 {% block content %}
+{% load static %}
 <nav class="navbar navbar-expand-lg bg-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">{{nama}}</a>
@@ -45,4 +46,56 @@
     <h5>Sesi terakhir login: {{ last_login }}</h5>
     
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    function postNew(e) {
+      e.preventDefault()
+      const namaBarang = $("#nama_barang").val()
+      const hargaBarang = $("#harga_barang").val()
+      const deskripsi = $("#deskripsi").val()
+  
+      const data = {
+        nama_barang: namaBarang,
+        harga_barang: hargaBarang,
+        deskripsi,
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+      }
+  
+      $.ajax({
+        type: 'POST',
+        url: '{% url "wishlist:add_wishlist_ajax" %}',
+        data: data, 
+        success: () => {
+          alert("Done!")
+          fetchData()
+        },
+        // contentType: "application/json",
+        dataType: 'json'
+      });
+    }
+  
+    function writeTable(data) {
+      const table = $("#tbl")
+      table.empty()
+      for (let i = 0; i < data.length; i++) {
+        table.append(`
+          <tr>
+            <td>${data[i].fields.nama_barang}</td>
+            <td>${data[i].fields.harga_barang}</td>
+            <td>${data[i].fields.deskripsi}</td>
+          </tr>
+          `)
+      }
+    }
+  
+    function fetchData() {
+      $.get("/wishlist/json", writeTable)
+    }
+  
+    $(document).ready(() => {
+      $("#newBtn").click(postNew)
+      fetchData()
+    })
+  </script>
 {% endblock content %}
